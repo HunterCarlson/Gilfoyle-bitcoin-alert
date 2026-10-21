@@ -1,13 +1,13 @@
-import os
-import json
-from requests import Request, Session
-from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+import subprocess
+import sys
+from requests import Session
+from requests.exceptions import RequestException
 import time
 from prettytable import PrettyTable
 from datetime import datetime, timedelta
 
 
-url = ' https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+url = 'https://pro-api.coinmarketcap.com/public-api/v3/cryptocurrency/listings/latest'
 
 start = 1
 limit = 10
@@ -17,25 +17,30 @@ parameters = {
     'limit': int(limit),
     'convert': str(convert)
 }
-headers = {
-    'Accepts': 'application/json',
-    'X-CMC_PRO_API_KEY': '277886d5-e8e1-4b33-8e5d-d50ba830acf0',
-}
+
+
+def play_alert(file):
+    if sys.platform == 'win32':
+        subprocess.Popen(
+            ['ffplay', '-nodisp', '-autoexit', '-loglevel', 'quiet', file],
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+    else:
+        subprocess.run(['mpg123', file], check=True)
+
 
 session = Session()
-session.headers.update(headers)
 
 try:
-    response = session.get(url, params=parameters)
-    results = response.json()
-    data = results['data']
-    for currency in data:
-        symbol = currency['symbol']
     print()
     print("....Fetching Data From coinmarketcap API .......")
     print()
 
     while True:
+        response = session.get(url, params=parameters)
+        response.raise_for_status()
+        results = response.json()
+        data = results['data']
         portfolio_value = 0.00
         last_updated = 0
         table = PrettyTable(
@@ -52,7 +57,10 @@ try:
                         rank = currency['cmc_rank']
                         name = currency['name']
                         last_updated = currency['last_updated']
-                        quotes = currency['quote'][convert]
+                        quotes = next(
+                            quote for quote in currency['quote']
+                            if quote['symbol'] == convert
+                        )
                         price = quotes['price']
                         float_amount = float(amount)
                         price_string = '{:,}'.format(round(price, 2))
@@ -69,7 +77,7 @@ try:
                             print(table)
                             print()
                             file = 'alert.mp3'
-                            os.system("mpg123 " + file)
+                            play_alert(file)
                         else:
                             print("No difference between previous and latest price")
                             print(table)
@@ -85,5 +93,5 @@ try:
         print("================================")
         time.sleep(300)
 
-except (ConnectionError, Timeout, TooManyRedirects) as e:
+except RequestException as e:
     print(e)

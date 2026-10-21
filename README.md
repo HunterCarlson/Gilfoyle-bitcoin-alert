@@ -4,9 +4,7 @@
 <img src="update.png" title="console output">
 
 # Gilfoyle-bitcoin-alert : <small>Bitcoin is Really Volatile Today </small>
-## Api : coinmarketcap <a href="https://coinmarketcap.com/api/documentation/v1/#">coinmarketcap</a>
-## If program doesn't execute try replacing api key in headers of source code with you own api key 
-## Api key can be collected from <a href="https://coinmarketcap.com/api/documentation/v1/#">coinmarketcap</a>
+## API: <a href="https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api/">CoinMarketCap Keyless Public API</a>
 <ul>
 
   <li>When the previous price of a bitcoin is hit by the latest price the  program alerts playing Napalm Death mp3</li>
@@ -18,7 +16,8 @@
  
 ## Installation and Running code
 <p> pip install -r requirements.txt</p> 
-<p> python alerts.py </p>
+<p> python alert.py </p>
 
-  
-
+On Windows, install FFmpeg (including `ffplay`) and ensure `ffplay` is on
+`PATH`; alert audio plays without opening a media-player window. On Linux and
+macOS, install `mpg123` to play alert audio.
